@@ -7,12 +7,12 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Media;
 using ME3Explorer.Unreal;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using lib3ds.Net;
 using KFreonLib.Debugging;
 using KFreonLib.MEDirectories;
 using ME3Explorer.Packages;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.Unreal.Classes
 {
@@ -1196,11 +1196,11 @@ namespace ME3Explorer.Unreal.Classes
         public void DrawMesh(Device device)
         {
             device.VertexFormat = CustomVertex.PositionNormalTextured.Format;
-            device.RenderState.Lighting = false;
+            device.SetRenderState(RenderState.Lighting, false);
             if(DirectXGlobal.DrawWireFrame)
-                device.RenderState.FillMode = FillMode.WireFrame;
+                device.SetRenderState(RenderState.FillMode, FillMode.Wireframe);
             else
-                device.RenderState.FillMode = FillMode.Solid;
+                device.SetRenderState(RenderState.FillMode, FillMode.Solid);
             if (Mesh.Mat.Lods != null) 
             for (int i = 0; i < Mesh.Mat.Lods[0].SectionCount; i++)
             {
@@ -1260,13 +1260,13 @@ namespace ME3Explorer.Unreal.Classes
         public void Render(Device device, Matrix m)
         {
             device.VertexFormat = CustomVertex.PositionNormalTextured.Format;
-            device.RenderState.Lighting = true;
+            device.SetRenderState(RenderState.Lighting, true);
             if (DirectXGlobal.DrawWireFrame || isVolumetric)
-                device.RenderState.FillMode = FillMode.WireFrame;
+                device.SetRenderState(RenderState.FillMode, FillMode.Wireframe);
             else
-                device.RenderState.FillMode = FillMode.Solid;
-            device.Transform.World = m;
-            device.RenderState.CullMode = Cull.None;
+                device.SetRenderState(RenderState.FillMode, FillMode.Solid);
+            device.SetTransform(TransformState.World, m);
+            device.SetRenderState(RenderState.CullMode, Cull.None);
             try
             {
                 for (int i = 0; i < Mesh.Mat.Lods[0].SectionCount; i++)
@@ -1422,32 +1422,32 @@ namespace ME3Explorer.Unreal.Classes
         {
             if (Mesh.IdxBuf.Indexes.Count() != 0)
             {
-                Meshplorer.Preview3D.RawTriangles = new Microsoft.DirectX.Direct3D.CustomVertex.PositionTextured[Mesh.IdxBuf.Indexes.Count()];
+                Meshplorer.Preview3D.RawTriangles = new CustomVertex.PositionTextured[Mesh.IdxBuf.Indexes.Count()];
                 for (int i = 0; i < Mesh.IdxBuf.Indexes.Count(); i++)
                 {
                     int idx = Mesh.IdxBuf.Indexes[i];
                     Vector3 pos = Mesh.Vertices.Points[idx];
                     Vector2 UV = Mesh.Edges.UVSet[idx].UVs[0];
-                    Meshplorer.Preview3D.RawTriangles[i] = new Microsoft.DirectX.Direct3D.CustomVertex.PositionTextured(pos, UV.X, UV.Y);
+                    Meshplorer.Preview3D.RawTriangles[i] = new CustomVertex.PositionTextured(pos, UV.X, UV.Y);
                 }
             }
             else
             {
-                Meshplorer.Preview3D.RawTriangles = new Microsoft.DirectX.Direct3D.CustomVertex.PositionTextured[Mesh.RawTris.RawTriangles.Count() * 3];
+                Meshplorer.Preview3D.RawTriangles = new CustomVertex.PositionTextured[Mesh.RawTris.RawTriangles.Count() * 3];
                 for (int i = 0; i < Mesh.RawTris.RawTriangles.Count(); i++)
                 {
                     int idx = Mesh.RawTris.RawTriangles[i].v0;
                     Vector3 pos = Mesh.Vertices.Points[idx];
                     Vector2 UV = Mesh.Edges.UVSet[idx].UVs[0];
-                    Meshplorer.Preview3D.RawTriangles[i * 3] = new Microsoft.DirectX.Direct3D.CustomVertex.PositionTextured(pos, UV.X, UV.Y);
+                    Meshplorer.Preview3D.RawTriangles[i * 3] = new CustomVertex.PositionTextured(pos, UV.X, UV.Y);
                     idx = Mesh.RawTris.RawTriangles[i].v1;
                     pos = Mesh.Vertices.Points[idx];
                     UV = Mesh.Edges.UVSet[idx].UVs[0];
-                    Meshplorer.Preview3D.RawTriangles[i * 3 + 1] = new Microsoft.DirectX.Direct3D.CustomVertex.PositionTextured(pos, UV.X, UV.Y);
+                    Meshplorer.Preview3D.RawTriangles[i * 3 + 1] = new CustomVertex.PositionTextured(pos, UV.X, UV.Y);
                     idx = Mesh.RawTris.RawTriangles[i].v2;
                     pos = Mesh.Vertices.Points[idx];
                     UV = Mesh.Edges.UVSet[idx].UVs[0];
-                    Meshplorer.Preview3D.RawTriangles[i * 3 + 2] = new Microsoft.DirectX.Direct3D.CustomVertex.PositionTextured(pos, UV.X, UV.Y);
+                    Meshplorer.Preview3D.RawTriangles[i * 3 + 2] = new CustomVertex.PositionTextured(pos, UV.X, UV.Y);
                 }
             }
             if (Mesh.Mat.MatInst.Count() != 0)
@@ -1471,7 +1471,7 @@ namespace ME3Explorer.Unreal.Classes
                         t.extractImage(inf, ME3Directory.cookedPath, loc + "\\exec\\TempTex.dds");
                         if (File.Exists(loc + "\\exec\\TempTex.dds"))
                         {
-                            Texture t2 = TextureLoader.FromFile(Meshplorer.Preview3D.device, loc + "\\exec\\TempTex.dds");
+                            Texture t2 = Texture.FromFile(Meshplorer.Preview3D.device, loc + "\\exec\\TempTex.dds");
                             Meshplorer.Preview3D.CurrentTex = t2;
                         }
                         break;

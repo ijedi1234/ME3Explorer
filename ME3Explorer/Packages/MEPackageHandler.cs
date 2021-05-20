@@ -42,7 +42,7 @@ namespace ME3Explorer.Packages
                     licenseVersion = fs.ReadValueU16();
                 }
 
-                if (version == 684 && licenseVersion == 194)
+                if (version == ME3Package.VERSION && licenseVersion == ME3Package.LICENSE)
                 {
                     package = ME3ConstructorDelegate(pathToFile);
                 }

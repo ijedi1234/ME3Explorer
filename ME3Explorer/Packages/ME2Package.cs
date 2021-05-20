@@ -8,12 +8,15 @@ using System.Windows;
 using AmaroK86.MassEffect3.ZlibBlock;
 using Gibbed.IO;
 using KFreonLib.Debugging;
+using ME3Explorer.Packages.Decompressed;
 
 namespace ME3Explorer.Packages
 {
     public sealed class ME2Package : MEPackage, IMEPackage
     {
         public MEGame Game { get { return MEGame.ME2; } }
+
+        public ME3PackageDecompressed FileDecompressed { get { return null; } }
 
         public override bool IsModified
         {

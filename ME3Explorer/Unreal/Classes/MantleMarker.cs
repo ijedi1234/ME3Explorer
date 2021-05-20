@@ -12,9 +12,9 @@ using System.Drawing;
 using System.Windows.Forms;
 using ME3Explorer.Unreal;
 using ME3Explorer.Packages;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using KFreonLib.Debugging;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.Unreal.Classes
 {
@@ -251,8 +251,8 @@ namespace ME3Explorer.Unreal.Classes
 
         public void Render(Device device)
         {
-            device.RenderState.Lighting = false;
-            device.Transform.World = MyMatrix;
+            device.SetRenderState(RenderState.Lighting, false);
+            device.SetTransform(TransformState.World, MyMatrix);
             device.VertexFormat = CustomVertex.PositionColored.Format;
             if (points.Length != 0 && !isSelected)
                 device.DrawUserPrimitives(PrimitiveType.LineList, points.Length / 2, points);

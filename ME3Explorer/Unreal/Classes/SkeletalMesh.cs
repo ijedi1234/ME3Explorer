@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using ME3Explorer.Packages;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.Unreal.Classes
 {
@@ -799,17 +799,17 @@ namespace ME3Explorer.Unreal.Classes
             try
             {
                 device.VertexFormat = CustomVertex.PositionTextured.Format;
-                device.RenderState.Lighting = false;
-                device.RenderState.FillMode = FillMode.Solid;
-                device.RenderState.CullMode = Cull.None;
+                device.SetRenderState(RenderState.Lighting, false);
+                device.SetRenderState(RenderState.FillMode, FillMode.Solid);
+                device.SetRenderState(RenderState.CullMode, Cull.None);
                 if(DirectXSections[lod].Length > 2)
                     device.DrawUserPrimitives(PrimitiveType.TriangleList, DirectXSections[lod].Length / 3, DirectXSections[lod]);
-                device.RenderState.FillMode = FillMode.WireFrame;
-                device.RenderState.Lighting = true;
+                device.SetRenderState(RenderState.FillMode, FillMode.Wireframe);
+                device.SetRenderState(RenderState.Lighting, true);
                 if (DirectXSections[lod].Length > 2)
                     device.DrawUserPrimitives(PrimitiveType.TriangleList, DirectXSections[lod].Length / 3, DirectXSections[lod]);
             }
-            catch (Direct3DXException)
+            catch (SlimDXException)
             {
             }
         }

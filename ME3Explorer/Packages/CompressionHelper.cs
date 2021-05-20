@@ -220,8 +220,7 @@ namespace ME3Explorer.Packages
             var versionLo = input.ReadValueU16(endian);
             var versionHi = input.ReadValueU16(endian);
 
-            if (versionLo != 684 &&
-                versionHi != 194)
+            if (versionLo != ME3Package.VERSION && versionHi != ME3Package.LICENSE)
             {
                 throw new FormatException("unsupported pcc version");
             }

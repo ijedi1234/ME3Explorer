@@ -10,11 +10,11 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using ME3Explorer.Unreal;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using lib3ds.Net;
 using KFreonLib.Debugging;
 using ME3Explorer.Packages;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.Unreal.Classes
 {

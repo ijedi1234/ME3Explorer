@@ -5,21 +5,20 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using ME3Explorer.Unreal.Classes;
+using SlimDX;
+using SlimDX.Direct3D9;
+using ME3Explorer.Unreal;
 
-namespace ME3Explorer.Meshplorer
-{
-    public static class Preview3D
-    {
+namespace ME3Explorer.Meshplorer {
+    public static class Preview3D {
         public static Device device = null;
-        public static PresentParameters presentParams = new PresentParameters();        
+        public static PresentParameters presentParams = new PresentParameters();
         public static float CamDistance;
-        public static Vector3 CamOffset = new Vector3(0,0,0);
+        public static Vector3 CamOffset = new Vector3(0, 0, 0);
         public static Vector3 boxorigin;
         public static bool init;
-        public static bool rotate=true;
+        public static bool rotate = true;
         public static int BodySetup;
         public static CustomVertex.PositionTextured[] RawTriangles;
         public static Material Mat;
@@ -29,19 +28,16 @@ namespace ME3Explorer.Meshplorer
         private static SkeletalMesh skelMesh;
         public static int LOD;
 
-        public static SkeletalMesh SkelMesh
-        {
+        public static SkeletalMesh SkelMesh {
             get { return skelMesh; }
 
-            set
-            {
+            set {
                 LOD = 0;
                 skelMesh = value;
             }
         }
 
-        public struct DXCube
-        {
+        public struct DXCube {
             public Vector3 center;
             public Vector3 origin;
             public Vector3 size;
@@ -53,16 +49,14 @@ namespace ME3Explorer.Meshplorer
 
         public static List<DXCube> Cubes;
 
-        public static Vector3 switchYZ(Vector3 v)
-        {
+        public static Vector3 switchYZ(Vector3 v) {
             float f = v.Y;
             v.Y = v.Z;
             v.Z = f;
             return v;
         }
 
-        public static DXCube NewCubeByCubeMinMax(DXCube org, Vector3 min, Vector3 max, int c)
-        {
+        public static DXCube NewCubeByCubeMinMax(DXCube org, Vector3 min, Vector3 max, int c) {
             Vector3 orig = org.center;
             Vector3 antiorig = org.center;
             orig -= new Vector3(org.size.X * min.X, org.size.Y * min.Y, org.size.Z * min.Z);
@@ -71,13 +65,12 @@ namespace ME3Explorer.Meshplorer
             return NewCubeByOrigSize(orig, box, c);
         }
 
-        public static DXCube NewCubeByOrigSize(Vector3 origin, Vector3 size,int c)
-        {
-            DXCube res = new DXCube();            
+        public static DXCube NewCubeByOrigSize(Vector3 origin, Vector3 size, int c) {
+            DXCube res = new DXCube();
             res.origin = origin;
-            //res.origin = switchYZ(res.origin);
+            res.origin = switchYZ(res.origin);
             res.size = size;
-            //res.size = switchYZ(res.size);
+            res.size = switchYZ(res.size);
             res.center = origin + size * 0.5f;
             res.min = res.max = new Vector3(0.5f, 0.5f, 0.5f);
             res.childs = new List<DXCube>();
@@ -103,7 +96,7 @@ namespace ME3Explorer.Meshplorer
             res.verts[16] = new CustomVertex.PositionColored(origin, c);
             res.verts[17] = new CustomVertex.PositionColored(origin + new Vector3(0, 0, size.Z), c);
             res.verts[18] = new CustomVertex.PositionColored(origin + new Vector3(size.X, 0, 0), c);
-            res.verts[19] = new CustomVertex.PositionColored(origin + new Vector3(size.X, 0, size.Z), c); 
+            res.verts[19] = new CustomVertex.PositionColored(origin + new Vector3(size.X, 0, size.Z), c);
             res.verts[20] = new CustomVertex.PositionColored(origin + new Vector3(size.X, size.Y, 0), c);
             res.verts[21] = new CustomVertex.PositionColored(origin + new Vector3(size.X, size.Y, size.Z), c);
             res.verts[22] = new CustomVertex.PositionColored(origin + new Vector3(0, size.Y, 0), c);
@@ -111,95 +104,85 @@ namespace ME3Explorer.Meshplorer
             return res;
         }
 
-        public static void Refresh()
-        {
+        public static void Refresh() {
             if (init) Render();
         }
 
-        public static bool InitializeGraphics(Control handle)
-        {
-            try
-            {
+        public static bool InitializeGraphics(Control handle) {
+            try {
                 presentParams.Windowed = true;
                 presentParams.SwapEffect = SwapEffect.Discard;
                 presentParams.EnableAutoDepthStencil = true;
-                presentParams.AutoDepthStencilFormat = DepthFormat.D16;
-                device = new Device(0, DeviceType.Hardware, handle, CreateFlags.SoftwareVertexProcessing, presentParams);
+                presentParams.AutoDepthStencilFormat = Format.D16;
+                device = new Device(new Direct3D(), 0, DeviceType.Hardware, handle.Handle, CreateFlags.SoftwareVertexProcessing, presentParams);
                 CamDistance = 10;
                 Mat = new Material();
                 Mat.Diffuse = Color.White;
                 Mat.Specular = Color.LightGray;
-                Mat.SpecularSharpness = 15.0F;
+                Mat.Power = 15.0F;
                 device.Material = Mat;
                 string loc = Path.GetDirectoryName(Application.ExecutablePath);
-                DefaultTex = TextureLoader.FromFile(device, loc + "\\exec\\Default.bmp");
+                DefaultTex = Texture.FromFile(device, loc + "\\exec\\Default.bmp");
                 init = true;
                 return true;
-            }
-            catch (DirectXException)
-            {
+            } catch (SlimDXException) {
                 return false;
             }
         }
 
-        private static float fAngle=0;
+        private static float fAngle = 0;
 
-        public static void setTex(Texture tex = null)
-        {
+        public static void setTex(Texture tex = null) {
             if (device == null)
                 return;
 
-            if (tex == null)
-            {
-                device.SetTexture(0, DefaultTex); 
-            }
-            else
-            {
+            if (tex == null) {
+                device.SetTexture(0, DefaultTex);
+            } else {
                 device.SetTexture(0, tex);
             }
         }
 
-        private static void Render()
-        {
+        private static void Render() {
             if (device == null)
                 return;
-            try
-            {
-                device.SetRenderState(RenderStates.ShadeMode, 1);
-                device.RenderState.Lighting = false;
-                device.Lights[0].Type = LightType.Directional;
-                device.Lights[0].Diffuse = Color.White;
-                device.Lights[0].Range = 100000;
-                device.Lights[0].Direction = new Vector3(1, 1, -1);
-                device.Lights[0].Enabled = true;
-                device.RenderState.CullMode = Cull.None;
-                device.SetRenderState(RenderStates.ZEnable, true);
-                device.Clear(ClearFlags.Target, System.Drawing.Color.White, 1.0f, 0);
-                device.Clear(ClearFlags.ZBuffer, System.Drawing.Color.Black, 1.0f, 0);
+            try {
+                device.SetRenderState(RenderState.ShadeMode, 1);
+                device.SetRenderState(RenderState.Lighting, false);
+                Light light = new Light() {
+                    Type = LightType.Directional,
+                    Diffuse = Color.White,
+                    Range = 100000,
+                    Direction = new Vector3(1, 1, -1)
+                };
+                device.SetLight(0, light);
+                device.SetRenderState(RenderState.CullMode, Cull.None);
+                device.SetRenderState(RenderState.ZEnable, true);
+                device.Clear(ClearFlags.Target, Color.White, 1.0f, 0);
+                device.Clear(ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
                 device.BeginScene();
-                    int iTime = Environment.TickCount;
-                    if(rotate)
-                        fAngle = iTime * (2.0f * (float)Math.PI) / 10000.0f;
-                    device.Transform.World = Matrix.RotationZ(fAngle);
-                    device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, CamDistance, CamDistance / 2) + CamOffset, new Vector3(0, 0, 0) + CamOffset, new Vector3(0.0f, 0.0f, 1.0f));
-                    device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, 1.0f, 1.0f, 100000.0f);
-                    
-                    //device.SetTexture(0, null);
-                    device.VertexFormat = CustomVertex.PositionColored.Format;
-                    device.RenderState.Lighting = false;
-                    if(Cubes != null)
-                        for (int i = 0; i < Cubes.Count(); i++)
-                            device.DrawUserPrimitives(PrimitiveType.LineList,12,Cubes[i].verts);
+                int iTime = Environment.TickCount;
+                if (rotate)
+                    fAngle = iTime * (2.0f * (float)Math.PI) / 10000.0f;
+                device.SetTransform(TransformState.World, Matrix.RotationZ(fAngle));
+                Matrix view = Matrix.LookAtLH(new Vector3(0.0f, CamDistance, CamDistance / 2) + CamOffset, new Vector3(0, 0, 0) + CamOffset, new Vector3(0.0f, 0.0f, 1.0f));
+                device.SetTransform(TransformState.View, view);
+                device.SetTransform(TransformState.Projection, Matrix.PerspectiveFovLH((float)Math.PI / 4, 1.0f, 1.0f, 100000.0f));
 
-                    if (StatMesh != null)
-                        StatMesh.DrawMesh(device);
-                    if (SkelMesh != null)
-                        SkelMesh.DrawMesh(device, LOD);
+                device.SetTexture(0, null);
+                device.VertexFormat = CustomVertex.PositionColored.Format;
+                device.SetRenderState(RenderState.Lighting, false);
+                if (Cubes != null)
+                    for (int i = 0; i < Cubes.Count(); i++)
+                        device.DrawUserPrimitives(PrimitiveType.LineList, 12, Cubes[i].verts);
+
+                if (StatMesh != null)
+                    StatMesh.DrawMesh(device);
+                if (SkelMesh != null)
+                    SkelMesh.DrawMesh(device, LOD);
                 device.EndScene();
                 device.Present();
-            }
-            catch (DirectXException)
-            {
+            } catch (SlimDXException) {
                 return;
             }
         }

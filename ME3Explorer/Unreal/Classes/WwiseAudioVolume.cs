@@ -11,10 +11,10 @@ using System.Text;
 using System.Windows.Forms;
 using ME3Explorer.Unreal;
 using ME3Explorer.Packages;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using KFreonLib.Debugging;
 using ModJob = KFreonLib.Scripting.ModMaker.ModJob;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.Unreal.Classes
 {
@@ -199,7 +199,7 @@ namespace ME3Explorer.Unreal.Classes
 
         public void Render(Device device)
         {
-            device.Transform.World = MyMatrix;
+            device.SetTransform(TransformState.World, MyMatrix);
             if (brush != null)
                 brush.Render(device);
         }

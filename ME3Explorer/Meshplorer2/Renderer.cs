@@ -5,9 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using ME3Explorer.Unreal.Classes;
+using SlimDX;
+using SlimDX.Direct3D9;
+using ME3Explorer.Unreal;
 
 namespace ME3Explorer.Meshplorer2
 {
@@ -42,21 +43,21 @@ namespace ME3Explorer.Meshplorer2
                 presentParams.Windowed = true;
                 presentParams.SwapEffect = SwapEffect.Discard;
                 presentParams.EnableAutoDepthStencil = true;
-                presentParams.AutoDepthStencilFormat = DepthFormat.D16;
-                device = new Device(0, DeviceType.Hardware, handle, CreateFlags.SoftwareVertexProcessing, presentParams);
+                presentParams.AutoDepthStencilFormat = Format.D16;
+                device = new Device(new Direct3D(), 0, DeviceType.Hardware, handle.Handle, CreateFlags.SoftwareVertexProcessing, presentParams);
                 CamDistance = 10;
                 Mat = new Material();
                 Mat.Diffuse = Color.White;
                 Mat.Specular = Color.LightGray;
-                Mat.SpecularSharpness = 15.0F;
+                Mat.Power = 15.0F;
                 device.Material = Mat;
                 string loc = Path.GetDirectoryName(Application.ExecutablePath);
-                DefaultTex = TextureLoader.FromFile(device, loc + "\\exec\\Default.bmp");
+                DefaultTex = Texture.FromFile(device, loc + "\\exec\\Default.bmp");
                 CreateCoordLines();
                 init = true;
                 return true;
             }
-            catch (DirectXException)
+            catch (SlimDXException)
             {
                 return false;
             }
@@ -77,35 +78,38 @@ namespace ME3Explorer.Meshplorer2
                 return;
             try
             {
-                device.SetRenderState(RenderStates.ShadeMode, 1);
-                device.RenderState.Lighting = false;
-                device.Lights[0].Type = LightType.Directional;
-                device.Lights[0].Diffuse = Color.White;
-                device.Lights[0].Range = 100000;
-                device.Lights[0].Direction = new Vector3(1, 1, -1);
-                device.Lights[0].Enabled = true;
-                device.RenderState.CullMode = Cull.None;
-                device.SetRenderState(RenderStates.ZEnable, true);
+                device.SetRenderState(RenderState.ShadeMode, true);
+                device.SetRenderState(RenderState.Lighting, false);
+                Light light = new Light() {
+                    Type = LightType.Directional,
+                    Diffuse = Color.White,
+                    Range = 100000,
+                    Direction = new Vector3(1, 1, -1)
+                };
+                device.SetLight(0, light);
+                device.SetRenderState(RenderState.CullMode, Cull.None);
+                device.SetRenderState(RenderState.ZEnable, true);
                 device.Clear(ClearFlags.Target, System.Drawing.Color.White, 1.0f, 0);
                 device.Clear(ClearFlags.ZBuffer, System.Drawing.Color.Black, 1.0f, 0);
                 device.BeginScene();
                 int iTime = Environment.TickCount;
                 if (rotate)
                     fAngle = iTime * (2.0f * (float)Math.PI) / 10000.0f;
-                device.Transform.World = Matrix.RotationZ(fAngle);
-                device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, CamDistance, CamDistance / 2) + CamOffset, new Vector3(0, 0, 0) + CamOffset, new Vector3(0.0f, 0.0f, 1.0f));
-                device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, 1.0f, 1.0f, 100000.0f);
+                device.SetTransform(TransformState.World, Matrix.RotationZ(fAngle));
+                Matrix view = Matrix.LookAtLH(new Vector3(0.0f, CamDistance, CamDistance / 2) + CamOffset, new Vector3(0, 0, 0) + CamOffset, new Vector3(0.0f, 0.0f, 1.0f));
+                device.SetTransform(TransformState.View, view);
+                device.SetTransform(TransformState.Projection, Matrix.PerspectiveFovLH((float)Math.PI / 4, 1.0f, 1.0f, 100000.0f));
                 device.SetTexture(0, null);
                 RenderCoordsystem(device);
                 device.VertexFormat = CustomVertex.PositionColored.Format;
-                device.RenderState.Lighting = false;
+                device.SetRenderState(RenderState.Lighting, false);
                 device.SetTexture(0, DefaultTex);
                 if (SKM != null)
                     SKM.DrawMesh(device, LOD);
                 device.EndScene();
                 device.Present();
             }
-            catch (DirectXException)
+            catch (SlimDXException)
             {
                 return;
             }
@@ -113,11 +117,11 @@ namespace ME3Explorer.Meshplorer2
 
         public static void RenderCoordsystem(Device device)
         {
-            device.RenderState.FillMode = FillMode.WireFrame;
+            device.SetRenderState(RenderState.FillMode, FillMode.Wireframe);
             device.VertexFormat = CustomVertex.PositionColored.Format;
-            device.RenderState.Ambient = Color.Black;
+            device.SetRenderState(RenderState.Ambient, Color.Black.ToArgb());
             device.DrawUserPrimitives(PrimitiveType.LineList, 3, lines);
-            device.RenderState.Ambient = Color.LightGray;
+            device.SetRenderState(RenderState.Ambient, Color.LightGray.ToArgb());
         }
     }
 }

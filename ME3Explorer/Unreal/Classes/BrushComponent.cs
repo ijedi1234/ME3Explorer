@@ -11,8 +11,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using ME3Explorer.Unreal;
 using ME3Explorer.Packages;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.Unreal.Classes
 {
@@ -219,11 +219,11 @@ namespace ME3Explorer.Unreal.Classes
         public void Render(Device device)
         {
             device.VertexFormat = CustomVertex.PositionColored.Format;
-            device.RenderState.Lighting = false;
+            device.SetRenderState(RenderState.Lighting, false);
             if(isSelected)
-                device.RenderState.FillMode = FillMode.Solid;
+                device.SetRenderState(RenderState.FillMode, FillMode.Solid);
             else
-                device.RenderState.FillMode = FillMode.WireFrame;
+                device.SetRenderState(RenderState.FillMode, FillMode.Wireframe);
             device.DrawUserPrimitives(PrimitiveType.TriangleList, 12, BrushMesh);
         }
 

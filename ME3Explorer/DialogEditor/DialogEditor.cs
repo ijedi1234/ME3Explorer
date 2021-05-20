@@ -10,13 +10,14 @@ using ME3Explorer.Unreal;
 using ME3Explorer.Unreal.Classes;
 using KFreonLib.MEDirectories;
 using ME3Explorer.Packages;
+using ME3Explorer.Packages.Decompressed;
 
 namespace ME3Explorer.DialogEditor
 {
     public partial class DialogEditor : WinFormsBase
     {
         public ME3BioConversation Dialog;
-        public List<IExportEntry> Objs;
+        public List<ExportTableEntry> Objs;
 
         public DialogEditor()
         {
@@ -35,32 +36,37 @@ namespace ME3Explorer.DialogEditor
 
         private void LoadFile(string fileName)
         {
-            try
-            {
+            //try
+            //{
                 LoadME3Package(fileName);
                 
                 RefreshCombo();
-            }
+            /*}
             catch (Exception ex)
             {
                 MessageBox.Show("Error:\n" + ex.Message);
-            }
+            }*/
         }
 
         public void RefreshCombo()
         {
-            Objs = new List<IExportEntry>();
-            IReadOnlyList<IExportEntry> Exports = pcc.Exports;
-            foreach (var exp in Exports)
-            {
-                if (exp.ClassName == "BioConversation")
-                {
-                    Objs.Add(exp);
-                }
-            }
+            Objs = new List<ExportTableEntry>();
+            List<ImportTableEntry> imports = pcc.FileDecompressed.ImportTable;
+            var importOBJs = imports.Where(i => i.ClassNameStr == "BioConversation");
+            List<ExportTableEntry> exports = pcc.FileDecompressed.ExportTable;
+            int convoIndex = pcc.FileDecompressed.NameTable.FindIndex(i => i == "BioConversation");
+            var classes = exports.Where(i => i.ClassStr == "BioConversation").ToList();
+            var superclasses = exports.Where(i => i.SuperClassStr == "BioConversation").ToList();
+            var arch = exports.Where(i => i.Archetype == convoIndex).ToList();
+            var link = exports.Where(i => i.Link == convoIndex).ToList();
+            var un1 = exports.Where(i => i.Unknown1 == convoIndex).ToList();
+            var un2 = exports.Where(i => i.Unknown2 == convoIndex).ToList();
+            var objName = exports.Where(i => i.ObjectName == convoIndex).ToList();
+            var objInd = exports.Where(i => i.ObjectIndex == convoIndex).ToList();
+            Objs = objInd;
             bioConversationComboBox.Items.Clear();
             foreach (var exp in Objs)
-                bioConversationComboBox.Items.Add("#" + exp.Index + " : " + exp.ObjectName);
+                bioConversationComboBox.Items.Add("#" + exp.ObjectIndex + " : " + exp.ObjectNameStr);
             if (bioConversationComboBox.Items.Count != 0)
                 bioConversationComboBox.SelectedIndex = 0;
         }
@@ -70,7 +76,7 @@ namespace ME3Explorer.DialogEditor
             int n = bioConversationComboBox.SelectedIndex;
             if (n == -1)
                 return;
-            Dialog = new ME3BioConversation(Objs[n] as ME3ExportEntry);
+            //Dialog = new ME3BioConversation(Objs[n] as ME3ExportEntry);
             RefreshTabs();
             RefreshVisualizer();
         }
@@ -947,7 +953,7 @@ namespace ME3Explorer.DialogEditor
                 }
                 updatedExports.Remove(Dialog.export.Index);
             }
-            if (updatedExports.Intersect(Objs.Select(x => x.Index)).Count() > 0)
+            if (updatedExports.Intersect(Objs.Select(x => (int)x.ObjectIndex)).Count() > 0)
             {
                 RefreshCombo();
             }

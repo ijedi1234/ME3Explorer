@@ -10,9 +10,8 @@ using System.Text;
 using System.Windows.Forms;
 using ME3Explorer.Unreal;
 using ME3Explorer.Packages;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using KFreonLib.Debugging;
+using SlimDX;
 
 namespace ME3Explorer.Unreal.Classes
 {
@@ -160,8 +159,8 @@ namespace ME3Explorer.Unreal.Classes
                         Vector3 currV = Vector3.Lerp(fromV, toV, t);
                         Quaternion qc = Quaternion.Slerp(q1, q2, t);
                         PSAFile.PSAAnimKeys key = new PSAFile.PSAAnimKeys();
-                        key.location = new PSAFile.PSAPoint(currV);
-                        key.rotation = new PSAFile.PSAQuad(QToVec4(qc));
+                        key.location = new PSAFile.PSAPoint(currV.X, currV.Y, currV.Z);
+                        key.rotation = new PSAFile.PSAQuad(QToVec4(qc).W, QToVec4(qc).X, QToVec4(qc).Y, QToVec4(qc).Z);
                         key.time = 1;
                         d.Keys.Add(key);
                     }
@@ -195,8 +194,8 @@ namespace ME3Explorer.Unreal.Classes
                     Vector3 currV = Vector3.Lerp(fromV, toV, t);
                     Quaternion qc = Quaternion.Slerp(q1, q2, t);
                     PSAFile.PSAAnimKeys key = new PSAFile.PSAAnimKeys();
-                    key.location = new PSAFile.PSAPoint(currV);
-                    key.rotation = new PSAFile.PSAQuad(QToVec4(qc));
+                    key.location = new PSAFile.PSAPoint(currV.X, currV.Y, currV.Z);
+                    key.rotation = new PSAFile.PSAQuad(QToVec4(qc).W, QToVec4(qc).X, QToVec4(qc).Y, QToVec4(qc).Z);
                     key.time = 1;
                     d.Keys.Add(key);
                 }

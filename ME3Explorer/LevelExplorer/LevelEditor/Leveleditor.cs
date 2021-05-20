@@ -10,9 +10,9 @@ using System.Windows.Forms;
 using ME3Explorer.Unreal;
 using ME3Explorer.Unreal.Classes;
 using ME3Explorer.Packages;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using KFreonLib.Debugging;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.LevelExplorer.LevelEditor
 {
@@ -78,8 +78,8 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
             if (MoveWASD)
             {
                 float w = e.X / (float)p1.Width;
-                DirectXGlobal.Cam.dir = Microsoft.DirectX.Vector3.Normalize(
-                    new Microsoft.DirectX.Vector3(
+                DirectXGlobal.Cam.dir = Vector3.Normalize(
+                    new Vector3(
                         (float)(Math.Cos(w * 3.1415f * 2f)),
                         (float)(Math.Sin(w * 3.1415f * 2f)),
                         (e.Y / (float)p1.Height) * -2 + 1
@@ -103,14 +103,14 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
         {
             if (SceneMan != null && SceneMan.device != null)
             {
-                PresentParameters p = SceneMan.device.PresentationParameters;
+                /*PresentParameters p = SceneMan.device.PresentationParameters;
                 if (p1.Width > 0 && p1.Height > 0)
                 {
                     p.BackBufferWidth = p1.Width;
                     p.BackBufferHeight = p1.Height;
                     SceneMan.device.Reset(p);
                     SceneMan.ResetDX();
-                }
+                }*/
             }
         }
 
@@ -158,7 +158,7 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
 
         private void p1_MouseClick(object sender, MouseEventArgs e)
         {
-            Device device = SceneMan.device;
+            /*Device device = SceneMan.device;
             if (device == null || timer1.Enabled == false)
                 return;
             Vector3 CamEye = DirectXGlobal.Cam.pos;
@@ -168,7 +168,7 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
             Vector3 dir = far - near;
             dir.Normalize();
             SceneMan.DeSelectAll();
-            SceneMan.Process3DClick(CamEye, dir);
+            SceneMan.Process3DClick(CamEye, dir);*/
         }
 
         private void unloadAllToolStripMenuItem_Click(object sender, EventArgs e)

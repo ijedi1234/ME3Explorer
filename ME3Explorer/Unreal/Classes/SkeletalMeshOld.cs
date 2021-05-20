@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using KFreonLib.Debugging;
 using ME3Explorer.Packages;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.Unreal.Classes
 {
@@ -1131,16 +1131,16 @@ namespace ME3Explorer.Unreal.Classes
             {                
                 device.SetTexture(0, DirectXGlobal.Tex_Default);
                 device.VertexFormat = CustomVertex.PositionTextured.Format;
-                device.RenderState.Lighting = false;
-                device.RenderState.FillMode = FillMode.Solid;
-                device.RenderState.CullMode = Cull.None;
+                device.SetRenderState(RenderState.Lighting, false);
+                device.SetRenderState(RenderState.FillMode, FillMode.Solid);
+                device.SetRenderState(RenderState.CullMode, Cull.None);
                 foreach (CustomVertex.PositionTextured[] list in DirectXSections)
                     if (list.Length != 0)
                         device.DrawUserPrimitives(PrimitiveType.TriangleList, list.Length / 3, list);
                 device.SetTexture(0, null);
                 device.VertexFormat = CustomVertex.PositionTextured.Format;
-                device.RenderState.Lighting = true;
-                device.RenderState.FillMode = FillMode.WireFrame;
+                device.SetRenderState(RenderState.Lighting, true);
+                device.SetRenderState(RenderState.FillMode, FillMode.Wireframe);
                 foreach (CustomVertex.PositionTextured[] list in DirectXSections)
                     if (list.Length != 0)
                         device.DrawUserPrimitives(PrimitiveType.TriangleList, list.Length / 3, list);

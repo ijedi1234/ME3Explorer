@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.DirectX.Direct3D;
 using KFreonLib.MEDirectories;
 using ME3Explorer.Packages;
+using SlimDX;
+using SlimDX.Direct3D9;
 
 namespace ME3Explorer.Unreal.Classes
 {
@@ -81,9 +82,9 @@ namespace ME3Explorer.Unreal.Classes
                     if (File.Exists(loc + "\\exec\\TempTex.dds"))
                         try
                         {
-                            t.Texture = TextureLoader.FromFile(Meshplorer.Preview3D.device, loc + "\\exec\\TempTex.dds");
+                            t.Texture = Texture.FromFile(Meshplorer.Preview3D.device, loc + "\\exec\\TempTex.dds");
                         }
-                        catch (Direct3DXException e)
+                        catch (SlimDXException e)
                         {
                         }
                     else

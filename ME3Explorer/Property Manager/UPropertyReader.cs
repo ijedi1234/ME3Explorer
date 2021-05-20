@@ -1,10 +1,9 @@
-﻿using System;
+﻿using SlimDX;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 
 namespace ME3Explorer.UnrealHelper
 {

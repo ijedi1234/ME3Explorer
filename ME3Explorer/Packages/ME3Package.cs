@@ -8,19 +8,23 @@ using AmaroK86.MassEffect3.ZlibBlock;
 using System.Diagnostics;
 using ME3Explorer.Unreal;
 using System.Windows;
+using ME3Explorer.Packages.Compressed;
+using ME3Explorer.Packages.Decompressed;
 
-namespace ME3Explorer.Packages
-{
-    public sealed class ME3Package : MEPackage, IMEPackage
-    {
+namespace ME3Explorer.Packages {
+    public sealed class ME3Package : MEPackage, IMEPackage {
         public MEGame Game { get { return MEGame.ME3; } }
+        public static int VERSION { get { return 0x2ad; } }
+        public static int LICENSE { get { return 0xcd; } }
 
-        static int headerSize = 0x8E;
+        public ME3PackageDecompressed FileDecompressed { get; private set; }
+        public FileHeader Header { get; private set; }
 
         public override bool IsModified {
             get
             {
-                return exports.Any(entry => entry.DataChanged == true) || imports.Any(entry => entry.HeaderChanged == true) || namesAdded > 0;
+                return false;
+                //return exports.Any(entry => entry.DataChanged == true) || imports.Any(entry => entry.HeaderChanged == true) || namesAdded > 0;
             }
         }
         public bool CanReconstruct { get { return !exports.Exists(x => x.ObjectName == "SeekFreeShaderCache" && x.ClassName == "ShaderCache"); } }
@@ -87,9 +91,19 @@ namespace ME3Explorer.Packages
         ///     PCCObject class constructor. It also loads namelist, importlist, exportinfo, and exportdata from pcc file
         /// </summary>
         /// <param name="pccFilePath">full path + file name of desired pcc file.</param>
-        private ME3Package(string pccFilePath)
-        {
+        private ME3Package(string pccFilePath) {
             FileName = Path.GetFullPath(pccFilePath);
+            using (FileStream file = File.OpenRead(FileName)) {
+                using(BinaryReader reader = new BinaryReader(file)) {
+                    Header = new FileHeader(reader);
+                    ME3PackageCompressed compressed = new ME3PackageCompressed(reader, Header);
+                    FileDecompressed = compressed.Decompress();
+                    File.WriteAllBytes(@"G:\Tools\ME3Explorer\outputs\decomp.txt", FileDecompressed.data);
+                }
+            }
+            return;
+            /*
+
             MemoryStream listsStream;
             names = new List<string>();
             imports = new List<ImportEntry>();
@@ -103,7 +117,7 @@ namespace ME3Explorer.Packages
                     throw new FormatException("not a pcc file");
                 }
 
-                if (lowVers != 684 && highVers != 194)
+                if (lowVers != VERSION && highVers != LICENSE)
                 {
                     throw new FormatException("unsupported version");
                 }
@@ -122,20 +136,20 @@ namespace ME3Explorer.Packages
                     pccStream.Seek(0, SeekOrigin.Begin);
                     pccStream.CopyTo(listsStream);
                 }
-            }
+            }*/
 
             // fill names list
-            listsStream.Seek(NameOffset, SeekOrigin.Begin);
+            /*listsStream.Seek(NameOffset, SeekOrigin.Begin);
             for (int i = 0; i < NameCount; i++)
             {
                 long currOffset = listsStream.Position;
                 int strLength = listsStream.ReadValueS32();
                 string str = listsStream.ReadString(strLength * -2, true, Encoding.Unicode);
                 names.Add(str);
-            }
+            }*/
 
             // fill import list
-            listsStream.Seek(ImportOffset, SeekOrigin.Begin);
+            /*listsStream.Seek(ImportOffset, SeekOrigin.Begin);
             for (int i = 0; i < ImportCount; i++)
             {
 
@@ -144,10 +158,10 @@ namespace ME3Explorer.Packages
                 imp.Index = i;
                 imp.PropertyChanged += importChanged;
                 imports.Add(imp);
-            }
+            }*/
 
             // fill export list
-            listsStream.Seek(ExportOffset, SeekOrigin.Begin);
+            /*listsStream.Seek(ExportOffset, SeekOrigin.Begin);
             byte[] buffer;
             for (int i = 0; i < ExportCount; i++)
             {
@@ -174,7 +188,7 @@ namespace ME3Explorer.Packages
                 e.PropertyChanged += exportChanged;
                 exports.Add(e);
                 listsStream.Seek(headerEnd, SeekOrigin.Begin);
-            }
+            }*/
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ME3Explorer.Packages.Decompressed;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -44,8 +45,8 @@ namespace ME3Explorer.Packages
         }
     }
 
-    public interface IMEPackage : IDisposable
-    {
+    public interface IMEPackage : IDisposable {
+        ME3PackageDecompressed FileDecompressed { get; }
         bool IsCompressed { get; }
         bool CanReconstruct { get; }
         bool IsModified { get; }

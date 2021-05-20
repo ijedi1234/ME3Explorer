@@ -5,14 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 using ME3Explorer.Unreal;
 using ME3Explorer.Unreal.Classes;
 using ME3Explorer.Packages;
 using lib3ds.Net;
 using KFreonLib.Debugging;
 using KFreonLib.MEDirectories;
+using SlimDX.Direct3D9;
+using SlimDX;
+//using Microsoft.DirectX.Direct3D;
+//using Microsoft.DirectX;
 
 namespace ME3Explorer.LevelExplorer.LevelEditor
 {
@@ -45,8 +47,8 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
             presentParams.Windowed = true;
             presentParams.SwapEffect = SwapEffect.Discard;
             presentParams.EnableAutoDepthStencil = true;
-            presentParams.AutoDepthStencilFormat = DepthFormat.D24S8;
-            return new Device(0, DeviceType.Hardware, p.Handle, CreateFlags.SoftwareVertexProcessing, presentParams);
+            presentParams.AutoDepthStencilFormat = Format.D24S8;
+            return new Device(new Direct3D(), 0, DeviceType.Hardware, p.Handle, CreateFlags.SoftwareVertexProcessing, presentParams);
         }
 
         public void Init(Device d, TreeView tv)
@@ -56,9 +58,9 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
             Material material = new Material();
             material.Diffuse = Color.White;
             material.Specular = Color.LightGray;
-            material.SpecularSharpness = 15.0F;
+            material.Power = 15.0F;
             device.Material = material;
-            device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, 1.0f, 1.0f, 1000000.0f);
+            /*device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, 1.0f, 1.0f, 1000000.0f);
             device.SetRenderState(RenderStates.ShadeMode, 1);
             device.RenderState.Lighting = true;
             device.RenderState.Ambient = Color.Gray;
@@ -71,9 +73,9 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
             device.RenderState.CullMode = Cull.None;
             device.SetRenderState(RenderStates.ZEnable, true);
             device.VertexFormat = CustomVertex.PositionNormalTextured.Format;
-            string loc = Path.GetDirectoryName(Application.ExecutablePath);
-            DirectXGlobal.Tex_Default = TextureLoader.FromFile(device, loc + "\\exec\\Default.bmp");
-            DirectXGlobal.Tex_Select = TextureLoader.FromFile(device, loc + "\\exec\\select.bmp");
+            string loc = Path.GetDirectoryName(Application.ExecutablePath);*/
+            //DirectXGlobal.Tex_Default = Texture.FromFile(device, loc + "\\exec\\Default.bmp");
+            //DirectXGlobal.Tex_Select = Texture.FromFile(device, loc + "\\exec\\select.bmp");
             GlobalTree = tv;
             GlobalTree.Nodes.Clear();
         }
@@ -83,9 +85,9 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
             Material material = new Material();
             material.Diffuse = Color.White;
             material.Specular = Color.LightGray;
-            material.SpecularSharpness = 15.0F;
+            material.Power = 15.0F;
             device.Material = material;
-            float aspect = device.PresentationParameters.BackBufferWidth / (float)device.PresentationParameters.BackBufferHeight;
+            /*float aspect = device.PresentationParameters.BackBufferWidth / (float)device.PresentationParameters.BackBufferHeight;
             device.Transform.Projection = Matrix.PerspectiveFovLH(1f / aspect, aspect, 1.0f, 1000000.0f);
             device.SetRenderState(RenderStates.ShadeMode, 1);
             device.RenderState.Lighting = true;
@@ -98,7 +100,7 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
             device.Lights[0].Enabled = true;
             device.RenderState.CullMode = Cull.None;
             device.SetRenderState(RenderStates.ZEnable, true);
-            device.VertexFormat = CustomVertex.PositionNormalTextured.Format;
+            device.VertexFormat = CustomVertex.PositionNormalTextured.Format;*/
         }
 
         public void AddLevel(ME3Package pcc)
@@ -121,7 +123,7 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
                         GlobalTree.Visible = false;
                         GlobalTree.Nodes.Add(t);
                         GlobalTree.Visible = true;
-                        DirectXGlobal.Cam.dir = new Vector3(1.0f, 1.0f, 1.0f);
+                        //DirectXGlobal.Cam.dir = new Vector3(1.0f, 1.0f, 1.0f);
                         Levels.Add(l);
                     }
                 }
@@ -153,16 +155,18 @@ namespace ME3Explorer.LevelExplorer.LevelEditor
                 return;
             try
             {
-                device.Clear(ClearFlags.Target, System.Drawing.Color.White, 1.0f, 0);
-                device.Clear(ClearFlags.ZBuffer, System.Drawing.Color.Black, 1.0f, 0);
+                device.Clear(ClearFlags.Target, Color.White, 1.0f, 0);
+                device.Clear(ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
                 device.BeginScene();
-                device.Lights[0].Type = LightType.Directional;
-                device.Lights[0].Diffuse = Color.White;
-                device.Lights[0].Range = 100000;
-                device.Lights[0].Direction = -DirectXGlobal.Cam.dir;
-                device.Lights[0].Enabled = true;
-                device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, 1.0f, 1.0f, 1000000.0f);
-                device.Transform.View = Matrix.LookAtLH(DirectXGlobal.Cam.pos, DirectXGlobal.Cam.pos + DirectXGlobal.Cam.dir, new Vector3(0.0f, 0.0f, 1.0f));
+                Light light = new Light() {
+                    Type = LightType.Directional,
+                    Diffuse = Color.White,
+                    Range = 100000,
+                    Direction = -DirectXGlobal.Cam.dir
+                };
+                device.SetLight(0, light);
+                device.SetTransform(TransformState.Projection, Matrix.PerspectiveFovLH((float)Math.PI / 4, 1.0f, 1.0f, 1000000.0f));
+                device.SetTransform(TransformState.View, Matrix.LookAtLH(DirectXGlobal.Cam.pos, DirectXGlobal.Cam.pos + DirectXGlobal.Cam.dir, new Vector3(0.0f, 0.0f, 1.0f)));
                 foreach (Levelfile l in Levels)
                     l.level.Render(device);
                 device.EndScene();

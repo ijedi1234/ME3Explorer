@@ -54,7 +54,6 @@ namespace ME3Explorer
         public static void Initialize()
         {
             HashSet<Tool> set = new HashSet<Tool>();
-
             #region Install Mods
             set.Add(new Tool
             {
@@ -506,6 +505,7 @@ namespace ME3Explorer
                 tags = new List<string> { "developer" },
                 subCategory = "Other",
             });
+            /*
             set.Add(new Tool
             {
                 name = "ME3 Creator",
@@ -523,6 +523,7 @@ namespace ME3Explorer
                 subCategory = "Core",
                 description = "ME3Creator is the toolset’s most advanced modding tool for ME3. It allows for level viewing, intrafile and interfile import and export cloning, re-linking of game objects, and much more.",
             });
+            */
             set.Add(new Tool
             {
                 name = "Meshplorer 2",
@@ -685,7 +686,6 @@ namespace ME3Explorer
                 description = "Edits .udk and .upk files created by the UDK."
             });
             #endregion
-
             items = set;
 
             loadFavorites();

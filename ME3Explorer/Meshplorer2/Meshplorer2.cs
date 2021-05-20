@@ -13,6 +13,7 @@ using ME3Explorer.Packages;
 using AmaroK86.MassEffect3;
 using KFreonLib.Debugging;
 using KFreonLib.MEDirectories;
+using SlimDX;
 
 namespace ME3Explorer.Meshplorer2
 {
@@ -348,7 +349,7 @@ namespace ME3Explorer.Meshplorer2
                 Renderer.SKM?.Owner.Dispose();
                 Renderer.SKM = null;
                 Renderer.CamDistance = 10;
-                Renderer.CamOffset = new Microsoft.DirectX.Vector3(0, 0, 0);
+                Renderer.CamOffset = new Vector3(0, 0, 0);
                 try
                 {
                     int i = 0;

@@ -3,16 +3,17 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using Gibbed.IO;
 using System.Threading.Tasks;
+using lzo.net;
+using System.IO.Compression;
 
 namespace AmaroK86.MassEffect3.ZlibBlock
 {
     public static class ZBlock
     {
         public static readonly uint magic = 0x9E2A83C1;
-        public static readonly uint maxSegmentSize = 0x20000;
+        public static readonly uint maxSegmentSize = 0x40000;
 
         /*
          * Name function: Compress
@@ -39,7 +40,6 @@ namespace AmaroK86.MassEffect3.ZlibBlock
 
             MemoryStream headBlock = new MemoryStream();
             MemoryStream dataBlock = new MemoryStream();
-            DeflaterOutputStream zipStream;
 
             int numSeg = (int)Math.Ceiling(count / (double)maxSegmentSize);
 
@@ -52,10 +52,9 @@ namespace AmaroK86.MassEffect3.ZlibBlock
             {
                 int copyBytes = Math.Min(i, (int)maxSegmentSize);
                 uint precCompSize = (uint)dataBlock.Length;
-                zipStream = new DeflaterOutputStream(dataBlock);
-                zipStream.Write(buffer, offset + (count - i), copyBytes);
-                zipStream.Flush();
-                zipStream.Finish();
+                LzoStream lzoStream = new LzoStream(dataBlock, CompressionMode.Compress);
+                lzoStream.Write(buffer, offset + (count - i), copyBytes);
+                lzoStream.Flush();
                 headBlock.WriteValueU32((uint)dataBlock.Length - precCompSize); //compressed segment size
                 headBlock.WriteValueS32(copyBytes); //uncompressed segment size
                 //Console.WriteLine("  Segment size: {0}, total read: {1}, compr size: {2}", maxSegmentSize, copyBytes, (uint)dataBlock.Length - precCompSize);
@@ -139,7 +138,6 @@ namespace AmaroK86.MassEffect3.ZlibBlock
 
             using (MemoryStream buffStream = new MemoryStream(buffer, offset, count))
             {
-                InflaterInputStream zipStream;
                 uint magicStream = buffStream.ReadValueU32();
                 if (magicStream != magic && magicStream.Swap() != magic)
                 {
@@ -170,9 +168,11 @@ namespace AmaroK86.MassEffect3.ZlibBlock
 
                     buffStream.Seek(dataSegm, SeekOrigin.Begin);
                     //Console.WriteLine("compr size: {0}, uncompr size: {1}, data offset: 0x{2:X8}", comprSegm, uncomprSegm, dataSegm);
-                    zipStream = new InflaterInputStream(buffStream);
-                    zipStream.Read(outputBuffer, buffOff, uncomprSegm);
-                    zipStream.Flush();
+                    LzoStream lzoStream = new LzoStream(buffStream, CompressionMode.Decompress);
+                    try {
+                        lzoStream.Read(outputBuffer, buffOff, uncomprSegm);
+                    } catch (EndOfStreamException) { }
+                    lzoStream.Flush();
                     buffOff += uncomprSegm;
                     dataSegm += comprSegm;
                 }
